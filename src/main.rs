@@ -21,7 +21,8 @@ fn main() {
     //     -3752491-
     //     5-1639--2
     // "};
-    let puzzle_definition = {"
+    let puzzle_definition = {
+        "
         -6-----8-
         ---234--7
         2-1------
@@ -31,7 +32,8 @@ fn main() {
         ----1-6--
         5--879---
         -8-------
-    "};
+    "
+    };
 
     fn load_puzzle(definition: &str) -> Vec<i32> {
         let definition_without_whitespace: String = definition.chars().filter(|c| !c.is_whitespace()).collect();
@@ -44,7 +46,7 @@ fn main() {
     }
 
     let mut the_board = Board { board: load_puzzle(puzzle_definition) };
-    let square_to_squares_map= create_square_to_squares_map();
+    let square_to_squares_map = create_square_to_squares_map();
 
     println!("Puzzle definition:");
     println!("{}", the_board);
@@ -56,18 +58,18 @@ fn search(
     board: &mut Board,
     square_to_squares_map: &HashMap<i32, BTreeSet<i32>>,
     square_index: i32,
-    num_solutions_found: i32
+    num_solutions_found: i32,
 ) -> i32 {
-    match square_index {
+    if square_index == NUMBER_OF_SQUARES {
         // a solution was found
-        NUMBER_OF_SQUARES => { println!("{}", &board); return num_solutions_found + 1 }
-        _ => if board.board[square_index as usize] != 0 {
-            // square already populated so move to the next one
-            search(board, square_to_squares_map,square_index + 1, num_solutions_found)
-        } else {
-            // fill out the square with all legal square values
-            fill_square_value(board, square_to_squares_map, square_index,1, num_solutions_found)
-        }
+        println!("{}", &board);
+        return num_solutions_found + 1;
+    } else if board.board[square_index as usize] != 0 {
+        // square already populated so move to the next one
+        search(board, square_to_squares_map, square_index + 1, num_solutions_found)
+    } else {
+        // fill out the square with all legal square values
+        fill_square_value(board, square_to_squares_map, square_index, 1, num_solutions_found)
     }
 }
 
@@ -77,7 +79,7 @@ fn fill_square_value(
     square_to_squares_map: &HashMap<i32, BTreeSet<i32>>,
     square_index: i32,
     square_value: i32,
-    num_solutions_found: i32
+    num_solutions_found: i32,
 ) -> i32 {
     return if square_value > 9 {
         // all square values have been tried
@@ -91,8 +93,8 @@ fn fill_square_value(
         next_num_solutions_found
     } else {
         // try the next square value
-        fill_square_value(board, square_to_squares_map, square_index,square_value + 1, num_solutions_found)
-    }
+        fill_square_value(board, square_to_squares_map, square_index, square_value + 1, num_solutions_found)
+    };
 }
 
 // Checks that the given square can be legally populated with the given value
@@ -100,10 +102,10 @@ fn is_legal_square_value(
     board: &mut Board,
     square_to_squares_map: &HashMap<i32, BTreeSet<i32>>,
     square_index: i32,
-    square_value: i32
+    square_value: i32,
 ) -> bool {
     return square_to_squares_map.get(&square_index)
-        .map(|sqs| sqs.iter().map(|sq| board.board[*sq as usize])).expect("REASON")
+        .map(|sqs| sqs.iter().map(|sq| board.board[*sq as usize])).expect("Pre-populated")
         .find(|val| val == &square_value).is_none();
 }
 
@@ -129,7 +131,7 @@ impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let result: String = self.board.chunks(ROW_LENGTH)
             .map(|line| line.iter()
-                .map(|item: &i32| { if item > &0 { item.to_string() } else { " ".to_string() }})
+                .map(|item: &i32| { if item > &0 { item.to_string() } else { " ".to_string() } })
                 .collect::<Vec<_>>())
             .collect::<Vec<_>>()
             .iter().map(|line| line.join(" "))

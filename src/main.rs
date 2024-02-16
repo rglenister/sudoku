@@ -5,6 +5,8 @@ use std::fmt;
 const NUMBER_OF_SQUARES: i32 = 81;
 const ROW_LENGTH: usize = 9;
 
+const MAX_SQUARE_VALUE: i32 = 9;
+
 struct Board {
     board: Vec<i32>,
 }
@@ -41,8 +43,8 @@ fn main() {
             eprintln!("The puzzle definition has incorrect length");
             exit(1);
         }
-        return definition_without_whitespace
-            .chars().flat_map(|ch| ch.to_digit(10).or_else(|| Some(0))).map(|i| i as i32).collect();
+        definition_without_whitespace
+            .chars().flat_map(|ch| ch.to_digit(10).or_else(|| Some(0))).map(|i| i as i32).collect()
     }
 
     let mut the_board = Board { board: load_puzzle(puzzle_definition) };
@@ -63,7 +65,7 @@ fn search(
     if square_index == NUMBER_OF_SQUARES {
         // a solution was found
         println!("{}", &board);
-        return num_solutions_found + 1;
+        num_solutions_found + 1
     } else if board.board[square_index as usize] != 0 {
         // square already populated so move to the next one
         search(board, square_to_squares_map, square_index + 1, num_solutions_found)
@@ -81,20 +83,20 @@ fn fill_square_value(
     square_value: i32,
     num_solutions_found: i32,
 ) -> i32 {
-    return if square_value > 9 {
+    if square_value > MAX_SQUARE_VALUE {
         // all square values have been tried
         num_solutions_found
     } else if is_legal_square_value(board, square_to_squares_map, square_index, square_value) {
         // populate the square and search the new position
         board.board[square_index as usize] = square_value;
         let temp_num_solutions = search(board, &square_to_squares_map, square_index + 1, num_solutions_found);
-        let next_num_solutions_found: i32 = fill_square_value(board, square_to_squares_map, square_index, square_value + 1, temp_num_solutions);
+        let next_num_solutions_found = fill_square_value(board, square_to_squares_map, square_index, square_value + 1, temp_num_solutions);
         board.board[square_index as usize] = 0;
         next_num_solutions_found
     } else {
         // try the next square value
         fill_square_value(board, square_to_squares_map, square_index, square_value + 1, num_solutions_found)
-    };
+    }
 }
 
 // Checks that the given square can be legally populated with the given value
@@ -104,9 +106,9 @@ fn is_legal_square_value(
     square_index: i32,
     square_value: i32,
 ) -> bool {
-    return square_to_squares_map.get(&square_index)
+    square_to_squares_map.get(&square_index)
         .map(|sqs| sqs.iter().map(|sq| board.board[*sq as usize])).expect("Pre-populated")
-        .find(|val| val == &square_value).is_none();
+        .find(|val| val == &square_value).is_none()
 }
 
 // Creates a map from each board square to the set of squares whose value must be checked before the key square ios populated
@@ -124,7 +126,7 @@ fn create_square_to_squares_map() -> HashMap<i32, BTreeSet<i32>> {
         }
         result.insert(square_index, square_set);
     }
-    return result;
+    result
 }
 
 impl fmt::Display for Board {
@@ -138,6 +140,6 @@ impl fmt::Display for Board {
             .collect::<Vec<_>>()
             .join("\n") + "\n";
 
-        return write!(f, "{}", result);
+        write!(f, "{}", result)
     }
 }
